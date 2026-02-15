@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Simple Cart</title>
+    <style>
+      body {
+        font-family: Arial;
+        max-width: 500px;
+        margin: 40px auto;
+      }
+      button {
+        margin: 5px 0;
+        padding: 6px 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>🛒 Simple Cart</h2>
+
+    <div>
+      <input id="productId" placeholder="Product ID" />
+      <input id="quantity" type="number" value="1" min="1" />
+      <button onclick="addToCart()">Add to Cart</button>
+    </div>
+
+    <hr />
+
+    <h3>Cart Items</h3>
+    <ul id="cartList"></ul>
+
+    <script>
+      async function loadCart() {
+        const res = await fetch("/api/cart");
+        const cart = await res.json();
+
+        const list = document.getElementById("cartList");
+        list.innerHTML = "";
+
+        if (!cart || !cart.items.length) {
+          list.innerHTML = "<li>Cart is empty</li>";
+          return;
+        }
+
+        cart.items.forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = `Product: ${item.productId} | Quantity: ${item.quantity}`;
+          list.appendChild(li);
+        });
+      }
+
+      async function addToCart() {
+        const productId = document.getElementById("productId").value;
+        const quantity = Number(document.getElementById("quantity").value);
+
+        if (!productId) {
+          alert("Enter product ID");
+          return;
+        }
+
+        await fetch("/api/cart/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ productId, quantity }),
+        });
+
+        loadCart();
+      }
+
+      loadCart();
+    </script>
+  </body>
+</html>
